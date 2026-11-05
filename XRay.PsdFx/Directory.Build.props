@@ -1,0 +1,17 @@
+<Project>
+  <!-- XRay.PsdFx targets .NET Framework 4.5, so it overrides the repo-wide net10.0
+       defaults from the root Directory.Build.props instead of importing them
+       (importing would also pull LangVersion=latest, which breaks on net45). -->
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <IsPackable>false</IsPackable>
+    <Version>0.1.0-alpha</Version>
+    <DebugType>embedded</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

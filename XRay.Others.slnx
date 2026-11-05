@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/XRay.PsdFx/src/">
+    <Project Path="XRay.PsdFx/src/XRay.PsdFx/XRay.PsdFx.csproj" />
+  </Folder>
+  <Folder Name="/XRay.PsdFx/tools/">
+    <Project Path="XRay.PsdFx/tools/XRay.PsdFx.Demo/XRay.PsdFx.Demo.csproj" />
+  </Folder>
+
   <Folder Name="/XRay.Psd/fuzz/">
     <Project Path="XRay.Psd/fuzz/XRay.Psd.Fuzz/XRay.Psd.Fuzz.csproj" />
   </Folder>

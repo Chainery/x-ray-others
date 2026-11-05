@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XRay.PsdFx.Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\Administrator\\Desktop\\psd\\全效果.psd"
+    }
+  }
+}

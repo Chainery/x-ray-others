@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net45</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <RootNamespace>XRay.PsdFx.Demo</RootNamespace>
+    <Description>Round-trip check for XRay.PsdFx: writes a synthetic PSD with layer effects (incl. Noise), reads it back on .NET Framework 4.5.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\XRay.PsdFx\XRay.PsdFx.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

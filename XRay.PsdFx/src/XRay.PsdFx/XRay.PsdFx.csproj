@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <RootNamespace>XRay.PsdFx</RootNamespace>
+    <AssemblyName>XRay.PsdFx</AssemblyName>
+    <Description>Lightweight .NET Framework 4.5 reader for PSD layer effects (XRay.Psd subset): drop/inner shadows, glows, overlays, strokes, bevels, satins - including Noise (Nose) and the raw descriptor of every effect.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Reference assemblies let the repo build net45 without the 4.5 targeting pack installed. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
