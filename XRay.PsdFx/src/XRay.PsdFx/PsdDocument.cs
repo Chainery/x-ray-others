@@ -18,10 +18,11 @@ namespace XRay.PsdFx
 
     /// <summary>
     /// A parsed PSD document: header values, layers and their effects. Pixel data
-    /// (channels, merged image) is skipped - this library reads structure and layer
-    /// effects only, so it works the same on PSD and PSB files.
+    /// (channels, merged image) is not decoded yet - the port is in progress, and
+    /// this type grows into the full document (pixels, text, render) the way the
+    /// original XRay.Psd.PsdDocument does.
     /// </summary>
-    public sealed class PsdEffectsDocument
+    public sealed class PsdDocument
     {
         public bool IsLargeDocument { get; internal set; }
 
@@ -43,7 +44,38 @@ namespace XRay.PsdFx
 
         public IReadOnlyList<PsdLayer> Layers { get; internal set; }
 
-        public static PsdEffectsDocument FromFile(string path)
+        /// <summary>Alias of <see cref="BitsPerChannel"/> used by the ported imaging code.</summary>
+        internal int Depth
+        {
+            get { return BitsPerChannel; }
+        }
+
+        /// <summary>The raw color mode data section (duotone specifications live here).</summary>
+        internal byte[] ColorModeData { get; set; }
+
+        /// <summary>The color table of an indexed document, when parsed.</summary>
+        internal PsdColor[] Palette { get; set; }
+
+        /// <summary>The document's ICC transform (phase 10); null keeps the built-in formulas.</summary>
+        internal IccSrgbTransform ColorTransform { get; set; }
+
+        private DocumentColors _colors;
+
+        /// <summary>Single-color conversions that follow the document's color management.</summary>
+        internal DocumentColors Colors
+        {
+            get
+            {
+                if (_colors == null)
+                {
+                    _colors = new DocumentColors(this);
+                }
+
+                return _colors;
+            }
+        }
+
+        public static PsdDocument FromFile(string path)
         {
             using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
@@ -51,7 +83,7 @@ namespace XRay.PsdFx
             }
         }
 
-        public static PsdEffectsDocument FromStream(Stream stream)
+        public static PsdDocument FromStream(Stream stream)
         {
             using (var memory = new MemoryStream())
             {
@@ -71,7 +103,7 @@ namespace XRay.PsdFx
             }
         }
 
-        public static PsdEffectsDocument FromBytes(byte[] data)
+        public static PsdDocument FromBytes(byte[] data)
         {
             return PsdParser.Parse(data);
         }

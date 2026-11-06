@@ -50,7 +50,7 @@ namespace XRay.PsdFx.Demo
                 Console.WriteLine("Wrote " + path + " (" + psd.Length + " bytes)");
             }
 
-            var document = PsdEffectsDocument.FromFile(path);
+            var document = PsdDocument.FromFile(path);
             Console.WriteLine("Header: {0}x{1}, {2} channels, {3} bits, mode {4}, PSB={5}",
                 document.Width, document.Height, document.Channels, document.BitsPerChannel, document.ColorMode, document.IsLargeDocument);
             Console.WriteLine("Global light: angle {0}, altitude {1}", document.GlobalLightAngle, document.GlobalLightAltitude);
@@ -101,7 +101,7 @@ namespace XRay.PsdFx.Demo
         /// </summary>
         private static void Summary(string path)
         {
-            var document = PsdEffectsDocument.FromFile(path);
+            var document = PsdDocument.FromFile(path);
             foreach (var layer in document.Layers)
             {
                 if (layer.Style == null)

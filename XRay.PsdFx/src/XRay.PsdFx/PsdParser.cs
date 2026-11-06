@@ -17,14 +17,14 @@ namespace XRay.PsdFx
             "LMsk", "Lr16", "Lr32", "Layr", "Mt16", "Mt32", "Mtrn", "Alph", "FMsk", "lnk2", "FEid", "FXid", "PxSD", "cinf",
         };
 
-        public static PsdEffectsDocument Parse(byte[] data)
+        public static PsdDocument Parse(byte[] data)
         {
             var reader = new BigEndianReader(data);
-            var document = new PsdEffectsDocument();
+            var document = new PsdDocument();
             try
             {
                 ReadHeader(reader, document);
-                ReadColorModeData(reader);
+                ReadColorModeData(reader, document);
                 ReadImageResources(reader, document);
                 ReadLayerAndMaskInfo(reader, document);
             }
@@ -40,7 +40,7 @@ namespace XRay.PsdFx
             return document;
         }
 
-        private static void ReadHeader(BigEndianReader reader, PsdEffectsDocument document)
+        private static void ReadHeader(BigEndianReader reader, PsdDocument document)
         {
             if (reader.Remaining < 26)
             {
@@ -70,7 +70,7 @@ namespace XRay.PsdFx
             document.GlobalLightAltitude = 30;
         }
 
-        private static void ReadColorModeData(BigEndianReader reader)
+        private static void ReadColorModeData(BigEndianReader reader, PsdDocument document)
         {
             var length = reader.ReadUInt32();
             if (length > (uint)reader.Remaining)
@@ -78,10 +78,12 @@ namespace XRay.PsdFx
                 throw new PsdFormatException(string.Format("Color mode data length {0} exceeds the file.", length));
             }
 
-            reader.Skip((int)length);
+            // Kept as-is: the duotone specification lives here, and indexed
+            // documents carry their color table in this section.
+            document.ColorModeData = reader.ReadBytes((int)length);
         }
 
-        private static void ReadImageResources(BigEndianReader reader, PsdEffectsDocument document)
+        private static void ReadImageResources(BigEndianReader reader, PsdDocument document)
         {
             var length = reader.ReadLength(false);
             var resources = reader.Slice(length);
@@ -132,7 +134,7 @@ namespace XRay.PsdFx
             return value < -360 ? -360 : value > 360 ? 360 : value;
         }
 
-        private static void ReadLayerAndMaskInfo(BigEndianReader reader, PsdEffectsDocument document)
+        private static void ReadLayerAndMaskInfo(BigEndianReader reader, PsdDocument document)
         {
             var large = document.IsLargeDocument;
             if (reader.Remaining < (large ? 8 : 4))
@@ -190,7 +192,7 @@ namespace XRay.PsdFx
             }
         }
 
-        private static List<PsdLayer> ReadLayerInfo(BigEndianReader reader, PsdEffectsDocument document)
+        private static List<PsdLayer> ReadLayerInfo(BigEndianReader reader, PsdDocument document)
         {
             var records = new List<PsdLayer>();
             if (reader.Remaining < 2)
@@ -219,7 +221,7 @@ namespace XRay.PsdFx
             return records;
         }
 
-        private static PsdLayer ReadLayerRecord(BigEndianReader reader, PsdEffectsDocument document)
+        private static PsdLayer ReadLayerRecord(BigEndianReader reader, PsdDocument document)
         {
             var large = document.IsLargeDocument;
             var layer = new PsdLayer();
@@ -345,7 +347,7 @@ namespace XRay.PsdFx
             return bytes[0] == (byte)'8' && bytes[1] == (byte)'B' && ((bytes[2] == (byte)'I' && bytes[3] == (byte)'M') || (bytes[2] == (byte)'6' && bytes[3] == (byte)'4'));
         }
 
-        private static void ApplyTaggedBlocks(PsdLayer layer, List<TaggedBlock> blocks, PsdEffectsDocument document)
+        private static void ApplyTaggedBlocks(PsdLayer layer, List<TaggedBlock> blocks, PsdDocument document)
         {
             Descriptor effects = null;
             var sawMultiEffects = false;

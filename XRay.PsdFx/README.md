@@ -34,7 +34,7 @@
 ## 用法
 
 ```csharp
-var document = PsdEffectsDocument.FromFile("sample.psd");
+var document = PsdDocument.FromFile("sample.psd");
 
 foreach (var layer in document.Layers)
 {
@@ -66,7 +66,7 @@ foreach (var layer in document.Layers)
 | `Pattern.cs` | 图案摆放（id/名称/缩放/相位） |
 | `PsdParser.cs` | PSD 结构：文件头、图层记录、tagged block、效果提取 |
 | `LegacyEffects.cs` | Photoshop 5 `lrFX` 块翻译成描述符形状 |
-| `PsdLayer.cs` / `PsdEffectsDocument.cs` | 图层与文档模型 |
+| `PsdLayer.cs` / `PsdDocument.cs` | 图层与文档模型 |
 
 ## 验证
 

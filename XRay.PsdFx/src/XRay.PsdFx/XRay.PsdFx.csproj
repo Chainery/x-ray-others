@@ -1,16 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net45</TargetFramework>
+    <!-- net45 keeps the original XRay.Psd target; netstandard2.0 is the same source
+         built for modern .NET consumers (net10.0 sibling projects, .NET Core, Unity). -->
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <LangVersion>7.3</LangVersion>
     <RootNamespace>XRay.PsdFx</RootNamespace>
     <AssemblyName>XRay.PsdFx</AssemblyName>
-    <Description>Lightweight .NET Framework 4.5 reader for PSD layer effects (XRay.Psd subset): drop/inner shadows, glows, overlays, strokes, bevels, satins - including Noise (Nose) and the raw descriptor of every effect.</Description>
+    <Description>Dependency-free PSD/PSB structure and layer-effects reader: drop/inner shadows, glows, overlays, strokes, bevels, satins - including Noise (Nose) and the raw descriptor of every effect. Works on .NET Framework 4.5 and any netstandard2.0 runtime.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>X-Ray.PsdFx</PackageId>
+    <PackageTags>psd;psb;photoshop;layer-effects;layer-style;parser;net45;netstandard2.0</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- XML docs ship in the package so IntelliSense works for consumers. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Reference assemblies let the repo build net45 without the 4.5 targeting pack installed. -->
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" Condition="'$(TargetFramework)' == 'net45'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="/" Visible="false" />
   </ItemGroup>
 
 </Project>

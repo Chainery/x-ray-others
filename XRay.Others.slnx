@@ -1,6 +1,10 @@
 <Solution>
+  <Folder Name="/XRay.PsdFx/" />
   <Folder Name="/XRay.PsdFx/src/">
     <Project Path="XRay.PsdFx/src/XRay.PsdFx/XRay.PsdFx.csproj" />
+  </Folder>
+  <Folder Name="/XRay.PsdFx/tests/">
+    <Project Path="XRay.PsdFx/tests/XRay.PsdFx.Tests/XRay.PsdFx.Tests.csproj" />
   </Folder>
   <Folder Name="/XRay.PsdFx/tools/">
     <Project Path="XRay.PsdFx/tools/XRay.PsdFx.Demo/XRay.PsdFx.Demo.csproj" />
@@ -9,6 +13,7 @@
   <Folder Name="/XRay.Psd/fuzz/">
     <Project Path="XRay.Psd/fuzz/XRay.Psd.Fuzz/XRay.Psd.Fuzz.csproj" />
   </Folder>
+  <Folder Name="/XRay.Psd/" />
   <Folder Name="/XRay.Psd/benchmarks/">
     <Project Path="XRay.Psd/benchmarks/XRay.Psd.Benchmarks/XRay.Psd.Benchmarks.csproj" />
   </Folder>
@@ -31,6 +36,7 @@
   <Folder Name="/XRay.Email/tests/">
     <Project Path="XRay.Email/tests/XRay.Email.Tests/XRay.Email.Tests.csproj" />
   </Folder>
+  <Folder Name="/XRay.Email/" />
   <Folder Name="/XRay.Email/examples/">
     <Project Path="XRay.Email/examples/CreateMsgAndEml/CreateMsgAndEml.csproj" />
     <Project Path="XRay.Email/examples/MsgReaderDump/MsgReaderDump.csproj" />
@@ -39,12 +45,14 @@
   <Folder Name="/XRay.Email/tools/">
     <Project Path="XRay.Email/tools/XRay.Email.CorpusGen/XRay.Email.CorpusGen.csproj" />
   </Folder>
+  <Folder Name="/XRay.Ics/" />
   <Folder Name="/XRay.Ics/src/">
     <Project Path="XRay.Ics/src/XRay.Ics/XRay.Ics.csproj" />
   </Folder>
   <Folder Name="/XRay.Ics/tests/">
     <Project Path="XRay.Ics/tests/XRay.Ics.Tests/XRay.Ics.Tests.csproj" />
   </Folder>
+  <Folder Name="/XRay.PS/" />
   <Folder Name="/XRay.PS/src/">
     <Project Path="XRay.PS/src/XRay.PS.Skia/XRay.PS.Skia.csproj" />
     <Project Path="XRay.PS/src/XRay.PS/XRay.PS.csproj" />
@@ -55,6 +63,7 @@
   <Folder Name="/XRay.PS/tools/">
     <Project Path="XRay.PS/tools/XRay.PS.Cli/XRay.PS.Cli.csproj" />
   </Folder>
+  <Folder Name="/XRay.OneNote/" />
   <Folder Name="/XRay.OneNote/src/">
     <Project Path="XRay.OneNote/src/XRay.OneNote/XRay.OneNote.csproj" />
   </Folder>
@@ -64,6 +73,7 @@
   <Folder Name="/XRay.OneNote/tools/">
     <Project Path="XRay.OneNote/tools/XRay.OneNote.Cli/XRay.OneNote.Cli.csproj" />
   </Folder>
+  <Folder Name="/XRay.3D/" />
   <Folder Name="/XRay.3D/src/">
     <Project Path="XRay.3D/src/XRay.ThreeD/XRay.ThreeD.csproj" />
   </Folder>

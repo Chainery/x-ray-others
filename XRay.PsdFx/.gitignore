@@ -1,0 +1,15 @@
+# Build output
+bin/
+obj/
+artifacts/
+
+# Local NuGet feed produced by build/pack.ps1 (regenerate, do not commit binaries)
+packages/
+
+# Test diagnostics written by the suite (docs/测试移植.md)
+test-output/
+
+# IDE
+.vs/
+*.user
+*.suo
