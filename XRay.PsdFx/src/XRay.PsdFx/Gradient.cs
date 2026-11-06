@@ -143,7 +143,7 @@ namespace XRay.PsdFx
 
             if (grad != null)
             {
-                gradient.Name = grad.GetString("Nm  ");
+                gradient.Name = Descriptor.Localize(grad.GetString("Nm  "));
                 if (grad.GetEnum("GrdF") == "ClNs")
                 {
                     gradient.Noise = ParseNoise(grad);

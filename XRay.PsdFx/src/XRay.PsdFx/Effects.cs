@@ -1,3 +1,4 @@
+using ETP.QB.FileOperationItem.Mark.PSD.XRayPSD;
 using System;
 using System.Collections.Generic;
 
@@ -39,6 +40,14 @@ namespace XRay.PsdFx
         Smooth,
         ChiselHard,
         ChiselSoft,
+    }
+
+    /// <summary>What an effect paints: a color, a gradient or a pattern (stroke's PntT).</summary>
+    public enum PsdFillType
+    {
+        Solid,
+        Gradient,
+        Pattern,
     }
 
     /// <summary>
@@ -121,6 +130,13 @@ namespace XRay.PsdFx
 
         /// <summary>Dither (Dthr) of a gradient overlay or gradient stroke.</summary>
         public bool? Dither { get; set; }
+
+        /// <summary>
+        /// What the effect paints: a solid color, a gradient or a pattern
+        /// (stroke's PntT, glows' Clr/Grad, overlays' kind). Null for effects
+        /// that do not fill anything (shadows, bevel, satin).
+        /// </summary>
+        public PsdFillType? FillType { get; set; }
 
         // ---- overlays ----
 
@@ -440,17 +456,38 @@ namespace XRay.PsdFx
         {
             switch (key)
             {
-                case "DrSh": case "dropShadowMulti": return PsdEffectKind.DropShadow;
-                case "IrSh": case "innerShadowMulti": return PsdEffectKind.InnerShadow;
-                case "OrGl": case "outerGlowMulti": return PsdEffectKind.OuterGlow;
-                case "IrGl": case "innerGlowMulti": return PsdEffectKind.InnerGlow;
-                case "ebbl": case "bevelEmbossMulti": return PsdEffectKind.BevelEmboss;
-                case "ChFX": case "chromeFXMulti": return PsdEffectKind.Satin;
-                case "SoFi": case "solidFillMulti": return PsdEffectKind.ColorOverlay;
-                case "GrFl": case "gradientFillMulti": return PsdEffectKind.GradientOverlay;
-                case "patternFill": case "patternFillMulti": return PsdEffectKind.PatternOverlay;
-                case "FrFX": case "frameFXMulti": return PsdEffectKind.Stroke;
-                default: return null;
+                case "DrSh":
+                case "dropShadowMulti":
+                    return PsdEffectKind.DropShadow;
+                case "IrSh":
+                case "innerShadowMulti":
+                    return PsdEffectKind.InnerShadow;
+                case "OrGl":
+                case "outerGlowMulti":
+                    return PsdEffectKind.OuterGlow;
+                case "IrGl":
+                case "innerGlowMulti":
+                    return PsdEffectKind.InnerGlow;
+                case "ebbl":
+                case "bevelEmbossMulti":
+                    return PsdEffectKind.BevelEmboss;
+                case "ChFX":
+                case "chromeFXMulti":
+                    return PsdEffectKind.Satin;
+                case "SoFi":
+                case "solidFillMulti":
+                    return PsdEffectKind.ColorOverlay;
+                case "GrFl":
+                case "gradientFillMulti":
+                    return PsdEffectKind.GradientOverlay;
+                case "patternFill":
+                case "patternFillMulti":
+                    return PsdEffectKind.PatternOverlay;
+                case "FrFX":
+                case "frameFXMulti":
+                    return PsdEffectKind.Stroke;
+                default:
+                    return null;
             }
         }
 
@@ -498,6 +535,7 @@ namespace XRay.PsdFx
                 case PsdEffectKind.InnerGlow:
                     {
                         var gradient = d.GetObject("Clr ") == null && d.GetObject("Grad") != null;
+                        effect.FillType = gradient ? PsdFillType.Gradient : PsdFillType.Solid;
                         effect.BlendMode = Mode(d, "scrn");
                         effect.Color = gradient ? (PsdColor?)null : d.GetColor("Clr ") ?? new PsdColor(255, 255, 190);
                         effect.Opacity = Percent(d, "Opct", 75);
@@ -516,6 +554,9 @@ namespace XRay.PsdFx
                 case PsdEffectKind.ColorOverlay:
                 case PsdEffectKind.GradientOverlay:
                 case PsdEffectKind.PatternOverlay:
+                    effect.FillType =
+                        kind == PsdEffectKind.GradientOverlay ? PsdFillType.Gradient :
+                        kind == PsdEffectKind.PatternOverlay ? PsdFillType.Pattern : PsdFillType.Solid;
                     effect.BlendMode = Mode(d, "norm");
                     effect.Opacity = Percent(d, "Opct", 100);
                     effect.Color = kind == PsdEffectKind.ColorOverlay ? d.GetColor("Clr ") ?? new PsdColor(255, 0, 0) : (PsdColor?)null;
@@ -527,14 +568,20 @@ namespace XRay.PsdFx
 
                 case PsdEffectKind.Stroke:
                     {
-                        var solid = d.GetEnum("PntT") == null || d.GetEnum("PntT") == "SClr";
+                        // PntT: SClr = solid color, GrFl = gradient, Ptrn = pattern.
+                        var paint = d.GetEnum("PntT");
+                        var fill =
+                            paint == "GrFl" ? PsdFillType.Gradient :
+                            paint == "Ptrn" ? PsdFillType.Pattern : PsdFillType.Solid;
+                        effect.FillType = fill;
                         effect.BlendMode = Mode(d, "norm");
-                        effect.Color = solid ? d.GetColor("Clr ") ?? new PsdColor(0, 0, 0) : (PsdColor?)null;
+                        effect.Color = fill == PsdFillType.Solid ? d.GetColor("Clr ") ?? new PsdColor(0, 0, 0) : (PsdColor?)null;
                         effect.Opacity = Percent(d, "Opct", 100);
                         effect.Size = Math.Max(1, (float)d.GetNumber("Sz  ", 3));
-                        effect.Gradient = d.GetEnum("PntT") == "GrFl" ? PsdGradient.FromDescriptor(d) : null;
+                        effect.Gradient = fill == PsdFillType.Gradient ? PsdGradient.FromDescriptor(d) : null;
+                        effect.Pattern = fill == PsdFillType.Pattern ? PsdPatternPlacement.FromDescriptor(d) : null;
                         effect.Overprint = d.GetBoolean("overprint");
-                        effect.Dither = d.GetEnum("PntT") == "GrFl" && d.HasBoolean("Dthr") ? d.GetBoolean("Dthr") : (bool?)null;
+                        effect.Dither = fill == PsdFillType.Gradient && d.HasBoolean("Dthr") ? d.GetBoolean("Dthr") : (bool?)null;
                         var styl = d.GetEnum("Styl");
                         effect.StrokePosition = styl == "InsF" ? PsdStrokePosition.Inside : styl == "CtrF" ? PsdStrokePosition.Center : PsdStrokePosition.Outside;
                         break;
@@ -548,6 +595,10 @@ namespace XRay.PsdFx
                     effect.Distance = Math.Max(0, (float)d.GetNumber("Dstn", 11));
                     effect.Size = Math.Max(0, (float)d.GetNumber("blur", 14));
                     effect.Invert = d.GetBoolean("Invr", true);
+                    // ChFX is the old Chrome FX block: it carries a contour (MpgS) and
+                    // its anti-alias flag even though the Satin UI never shows them.
+                    effect.Contour = PsdContour.FromDescriptor(d.GetObject("MpgS"));
+                    effect.ContourAntiAliased = d.GetBoolean("AntA");
                     break;
 
                 case PsdEffectKind.BevelEmboss:
@@ -590,6 +641,12 @@ namespace XRay.PsdFx
                             if (texture != null)
                             {
                                 texture.AngleDegrees = 0;
+                                // The texture panel has a single "Link With Layer"
+                                // checkbox, stored in Algn — lnkA never appears in ebbl
+                                // (verified across real files; the reference renderer
+                                // maps the texture link to Algn too).
+                                texture.LinkWithLayer = d.GetBoolean("Algn", true);
+                                texture.AlignWithLayer = texture.LinkWithLayer;
                                 effect.Texture = texture;
                             }
                         }
@@ -638,8 +695,7 @@ namespace XRay.PsdFx
         /// <summary>The transfer contour of a shadow or glow, or null when it is Linear.</summary>
         private static PsdContour ContourOf(Descriptor d)
         {
-            var contour = PsdContour.FromDescriptor(d.GetObject("TrnS"));
-            return contour.IsLinear ? null : contour;
+            return PsdContour.FromDescriptor(d.GetObject("TrnS"));          
         }
 
         private static float Clamp(float value, float min, float max)

@@ -96,6 +96,28 @@ namespace XRay.PsdFx
     /// </summary>
     public sealed class Descriptor
     {
+        /// <summary>
+        /// Photoshop stores preset names as localized tokens, e.g.
+        /// <c>$$$/Contours/Defaults/Cone=锥形</c>: the part before '=' is the lookup
+        /// key, the part after it is the text to display. Plain strings pass through.
+        /// </summary>
+        internal static string Localize(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !text.StartsWith("$$$/", StringComparison.Ordinal))
+            {
+                return text;
+            }
+
+            var equals = text.IndexOf('=');
+            if (equals >= 0 && equals + 1 < text.Length)
+            {
+                return text.Substring(equals + 1);
+            }
+
+            var slash = text.LastIndexOf('/');
+            return slash >= 0 && slash + 1 < text.Length ? text.Substring(slash + 1) : text;
+        }
+
         private readonly List<KeyValuePair<string, DescriptorValue>> _items = new List<KeyValuePair<string, DescriptorValue>>();
 
         public string Name { get; set; }

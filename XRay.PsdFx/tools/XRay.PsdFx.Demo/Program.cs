@@ -218,7 +218,8 @@ namespace XRay.PsdFx.Demo
 
             var layer1 = BuildLayer("ShadowLayer", BuildLfx2Effects(), null);
             var layer2 = BuildLayer("LegacyLayer", null, BuildLrFxEffects());
-            var records = new[] { layer1, layer2 };
+            var layer3 = BuildLayer("PatternStrokeLayer", BuildPatternStrokeEffects(), null);
+            var records = new[] { layer1, layer2, layer3 };
 
             // Layer info: count + records + channel data.
             var info = new ByteWriter();
@@ -287,6 +288,42 @@ namespace XRay.PsdFx.Demo
             record.WriteUInt32((uint)extra.Length);
             record.WriteBytes(extra.ToBytes());
             return record.ToBytes();
+        }
+
+        /// <summary>A layer whose only effect is a pattern-filled stroke (PntT = Ptrn).</summary>
+        private static byte[] BuildPatternStrokeEffects()
+        {
+            var pattern = new DescriptorBuilder("Ptrn");
+            pattern.AddString("Idnt", "pat-07");
+            pattern.AddString("Nm  ", "Denim");
+
+            var phase = new DescriptorBuilder("Pnt ");
+            phase.AddDouble("Hrzn", 2);
+            phase.AddDouble("Vrtc", -3);
+
+            var d = new DescriptorBuilder("FrFX");
+            d.AddBool("enab", true);
+            d.AddEnum("Md  ", "BlnM", "Nrml");
+            d.AddPercent("Opct", 88);
+            d.AddPixels("Sz  ", 6);
+            d.AddEnum("Styl", "FStl", "CtrF");
+            d.AddEnum("PntT", "frct", "Ptrn");
+            d.AddObject("Ptrn", pattern);
+            d.AddPercent("Scl ", 75);
+            d.AddBool("lnkA", true);
+            d.AddObject("phase", phase);
+            d.AddAngle("Angl", 30);
+            d.AddBool("overprint", true);
+
+            var root = new DescriptorBuilder("null");
+            root.AddBool("masterFXSwitch", true);
+            root.AddObject("FrFX", d);
+
+            var block = new ByteWriter();
+            block.WriteUInt32(0);
+            block.WriteUInt32(16);
+            block.WriteBytes(root.ToBytes());
+            return block.ToBytes();
         }
 
         private static byte[] BuildLfx2Effects()
@@ -456,6 +493,7 @@ namespace XRay.PsdFx.Demo
             d.AddObject("Ptrn", pattern);
             d.AddPercent("Scl ", 200);
             d.AddBool("Algn", false);
+            d.AddBool("lnkA", false); // exercise the unlinked path; PS omits the key when checked
             d.AddObject("phase", phase);
             d.AddAngle("Angl", 0);
             return d;
@@ -486,6 +524,13 @@ namespace XRay.PsdFx.Demo
             d.AddPixels("Dstn", 11);
             d.AddPixels("blur", 14);
             d.AddBool("Invr", false);
+            d.AddBool("AntA", true);
+            d.AddObject("MpgS", Contour("Ring", new object[][]
+            {
+                new object[] { 0.0, 0.0, false },
+                new object[] { 128.0, 255.0, false },
+                new object[] { 255.0, 255.0, false },
+            }));
             return d;
         }
 
@@ -535,7 +580,7 @@ namespace XRay.PsdFx.Demo
             d.AddObject("Ptrn", pattern);
             d.AddObject("phase", phase);
             d.AddPercent("Scl ", 150);
-            d.AddBool("Algn", true);
+            d.AddBool("Algn", false); // the texture's single "link with layer" checkbox, unchecked
             d.AddPercent("textureDepth", 150);
             d.AddBool("InvT", true);
             d.AddBool("AntA", false);
@@ -674,10 +719,14 @@ namespace XRay.PsdFx.Demo
                 var bytes = System.Text.Encoding.GetEncoding(28591).GetBytes(text);
                 _bytes.Add((byte)bytes.Length);
                 WriteBytes(bytes);
+
+                // Layer names are padded so the whole field is a multiple of four,
+                // which is what ReadPascalString(4) expects.
                 var total = 1 + bytes.Length;
-                for (var i = total; i < 4; i++)
+                while ((total & 3) != 0)
                 {
                     _bytes.Add(0);
+                    total++;
                 }
             }
         }

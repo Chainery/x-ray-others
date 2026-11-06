@@ -49,7 +49,7 @@ namespace XRay.PsdFx
                 return Linear;
             }
 
-            var name = shape.GetString("Nm  ");
+            var name = Descriptor.Localize(shape.GetString("Nm  "));
             var points = new List<PsdContourPoint>();
             var curve = shape.GetList("Crv ");
             if (curve != null)

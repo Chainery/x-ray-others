@@ -23,10 +23,14 @@ namespace XRay.PsdFx
             return new PsdPatternPlacement
             {
                 PatternId = id,
-                PatternName = pattern.GetString("Nm  "),
+                PatternName = Descriptor.Localize(pattern.GetString("Nm  ")),
                 Scale = Math.Max(0.01f, (float)(descriptor.GetNumber("Scl ", 100) / 100)),
                 AngleDegrees = (float)descriptor.GetNumber("Angl", 0),
-                LinkWithLayer = descriptor.GetBoolean("Algn", true),
+                // Two different checkboxes: Algn = "Align With Layer" (the tile is
+                // anchored to the layer), lnkA = "Link With Layer" (scale/angle
+                // follow the layer). Photoshop omits both when checked (default true).
+                AlignWithLayer = descriptor.GetBoolean("Algn", true),
+                LinkWithLayer = descriptor.GetBoolean("lnkA", true),
                 PhaseX = (float)(phase != null ? phase.GetNumber("Hrzn", 0) : 0),
                 PhaseY = (float)(phase != null ? phase.GetNumber("Vrtc", 0) : 0),
             };
@@ -44,8 +48,11 @@ namespace XRay.PsdFx
         /// <summary>Angle in degrees (Angl; the reference forces 0 for bevel textures).</summary>
         public float AngleDegrees { get; set; }
 
-        /// <summary>Link With Layer (Algn).</summary>
-        public bool LinkWithLayer { get; private set; }
+        /// <summary>Align With Layer (Algn); the tile is anchored to the layer's bounds.</summary>
+        public bool AlignWithLayer { get; internal set; }
+
+        /// <summary>Link With Layer (lnkA); scale and angle follow the layer.</summary>
+        public bool LinkWithLayer { get; internal set; }
 
         /// <summary>Horizontal phase offset (phase Hrzn).</summary>
         public float PhaseX { get; private set; }
@@ -56,8 +63,19 @@ namespace XRay.PsdFx
         public override string ToString()
         {
             var name = string.IsNullOrEmpty(PatternName) ? "" : " \"" + PatternName + "\"";
+            var flags = "";
+            if (!LinkWithLayer)
+            {
+                flags += " unlinked";
+            }
+
+            if (!AlignWithLayer)
+            {
+                flags += " unaligned";
+            }
+
             return string.Format("pattern {0}{1} scale {2:0.##} angle {3:0.#} phase ({4:0.#},{5:0.#}){6}",
-                PatternId, name, Scale, AngleDegrees, PhaseX, PhaseY, LinkWithLayer ? " linked" : "");
+                PatternId, name, Scale, AngleDegrees, PhaseX, PhaseY, flags);
         }
     }
 }
