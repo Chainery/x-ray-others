@@ -78,6 +78,12 @@ namespace XRay.PsdFx
             return filled;
         }
 
+        /// <summary>Document-driven conversion: uses the document's ICC transform and duotone when present.</summary>
+        public static void ToRgb(PsdDocument document, int depth, float[][] planes, PlanarImage image)
+        {
+            ToRgb(document, depth, planes, image, document.ColorTransform, document.Colors.Duotone);
+        }
+
         public static int ColorChannelCount(PsdColorMode mode)
         {
             switch (mode)

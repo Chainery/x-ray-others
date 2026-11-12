@@ -23,6 +23,7 @@
     <Project Path="XRay.Psd/src/XRay.Psd/XRay.Psd.csproj" />
   </Folder>
   <Folder Name="/XRay.Psd/tests/">
+    <Project Path="XRay.Psd/tests/XRay.Psd.Demo/XRay.Psd.Demo.csproj" />
     <Project Path="XRay.Psd/tests/XRay.Psd.Skia.Tests/XRay.Psd.Skia.Tests.csproj" />
     <Project Path="XRay.Psd/tests/XRay.Psd.Tests/XRay.Psd.Tests.csproj" />
     <Project Path="XRay.Psd/tests/XRay.Psd.Text.Tests/XRay.Psd.Text.Tests.csproj" />

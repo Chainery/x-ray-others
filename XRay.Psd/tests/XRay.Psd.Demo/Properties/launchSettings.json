@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XRay.Psd.Demo": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\Administrator\\Desktop\\psd\\全调整.psd"
+    }
+  }
+}

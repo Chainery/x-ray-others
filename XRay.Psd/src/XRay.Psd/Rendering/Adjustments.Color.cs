@@ -4,31 +4,31 @@ using XRay.Psd.IO;
 namespace XRay.Psd.Rendering;
 
 /// <summary>Channel Mixer: one output channel as percents of R, G, B plus a constant (all -200..200).</summary>
-internal readonly record struct MixerChannel(int Red, int Green, int Blue, int Constant);
+public readonly record struct MixerChannel(int Red, int Green, int Blue, int Constant);
 
 /// <summary>Channel Mixer (<c>mixr</c>).</summary>
-internal sealed record ChannelMixerSettings(bool Monochrome, MixerChannel Red, MixerChannel Green, MixerChannel Blue);
+public sealed record ChannelMixerSettings(bool Monochrome, MixerChannel Red, MixerChannel Green, MixerChannel Blue);
 
 /// <summary>Black and White (<c>blwh</c>): percents for the six hue ranges plus an optional tint.</summary>
-internal sealed record BlackWhiteSettings(int Reds, int Yellows, int Greens, int Cyans, int Blues, int Magentas, PsdColor? Tint)
+public sealed record BlackWhiteSettings(int Reds, int Yellows, int Greens, int Cyans, int Blues, int Magentas, PsdColor? Tint)
 {
     public static BlackWhiteSettings Default => new(40, 60, 40, 60, 20, 80, null);
 }
 
 /// <summary>Selective Color (<c>selc</c>): CMYK corrections (-100..100) for nine color ranges.</summary>
-internal sealed record SelectiveColorSettings(bool Absolute, SelectiveColorRange[] Ranges);
+public sealed record SelectiveColorSettings(bool Absolute, SelectiveColorRange[] Ranges);
 
 /// <summary>One Selective Color range correction.</summary>
-internal readonly record struct SelectiveColorRange(int Cyan, int Magenta, int Yellow, int Black)
+public readonly record struct SelectiveColorRange(int Cyan, int Magenta, int Yellow, int Black)
 {
     public bool HasEffect => Cyan != 0 || Magenta != 0 || Yellow != 0 || Black != 0;
 }
 
 /// <summary>Photo Filter (<c>phfl</c>): filter color, density (0..100) and Preserve Luminosity.</summary>
-internal readonly record struct PhotoFilterSettings(double Red, double Green, double Blue, int Density, bool PreserveLuminosity);
+public readonly record struct PhotoFilterSettings(double Red, double Green, double Blue, int Density, bool PreserveLuminosity);
 
 /// <summary>Vibrance (<c>vibA</c>): vibrance and saturation, -100..100.</summary>
-internal readonly record struct VibranceSettings(int Vibrance, int Saturation);
+public readonly record struct VibranceSettings(int Vibrance, int Saturation);
 
 /// <summary>
 /// The adjustments the reference does not model: Channel Mixer, Black and White,

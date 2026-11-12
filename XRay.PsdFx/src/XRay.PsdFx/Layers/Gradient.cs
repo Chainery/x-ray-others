@@ -101,6 +101,34 @@ namespace XRay.PsdFx
         /// <summary>Mxm  per-channel maximums, 0..100.</summary>
         public double[] Maximum { get; internal set; }
 
+        internal PsdGradientNoise()
+        {
+        }
+
+        public PsdGradientNoise(uint seed, int roughness, bool transparency, PsdGradientNoiseModel model, double[] minimum, double[] maximum)
+        {
+            Seed = seed;
+            Roughness = roughness;
+            AddTransparency = transparency;
+            Model = model;
+            Minimum = minimum;
+            Maximum = maximum;
+        }
+
+        /// <summary>One noise channel (alpha last) in [0,1] at ramp position <paramref name="position"/>.</summary>
+        public double Channel(int channel, double position)
+        {
+            return Gradient.NoiseChannel(this, channel, position);
+        }
+
+        /// <summary>The noise's color (sRGB, 0..1; the alpha channel when transparency is on) at a ramp position.</summary>
+        internal ColorF Color(double position)
+        {
+            float r, g, b;
+            Gradient.NoiseColor(this, position, out r, out g, out b);
+            return new ColorF(r, g, b);
+        }
+
         public override string ToString()
         {
             return string.Format("noise seed {0} roughness {1} {2}{3}", Seed, Roughness, Model, AddTransparency ? " +transparency" : "");
@@ -228,7 +256,8 @@ namespace XRay.PsdFx
                 var number = list[i].AsNumber();
                 if (!double.IsNaN(number))
                 {
-                    result[i] = Clamp((float)number, 0f, 100f);
+                    // The noise field works in whole percents (rounded, away from zero).
+                    result[i] = Clamp((float)Math.Round(number, MidpointRounding.AwayFromZero), 0f, 100f);
                 }
             }
 
@@ -268,6 +297,27 @@ namespace XRay.PsdFx
 
         private PsdGradient()
         {
+        }
+
+        /// <summary>Builds a gradient model from programmatic stops (Gradient Map parsing).</summary>
+        internal static PsdGradient FromStops(PsdGradientColorStop[] colorStops, PsdGradientAlphaStop[] alphaStops, float smoothness, PsdGradientInterpolation interpolation, PsdGradientNoise noise)
+        {
+            var gradient = new PsdGradient();
+            gradient.Interpolation = interpolation;
+            gradient.Smoothness = smoothness;
+            gradient.Noise = noise;
+            gradient.Scale = 1f;
+            foreach (var stop in colorStops)
+            {
+                gradient._colorEntries.Add(new ColorEntry(stop.Location, stop.Color, stop.Midpoint));
+            }
+
+            foreach (var stop in alphaStops)
+            {
+                gradient._alphaEntries.Add(new AlphaEntry(stop.Location, stop.Opacity, stop.Midpoint));
+            }
+
+            return gradient;
         }
 
         private static float Clamp(float value, float min, float max)

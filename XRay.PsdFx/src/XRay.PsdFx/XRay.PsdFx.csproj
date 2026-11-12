@@ -23,6 +23,8 @@
   <ItemGroup>
     <!-- Reference assemblies let the repo build net45 without the 4.5 targeting pack installed. -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" Condition="'$(TargetFramework)' == 'net45'" />
+    <!-- ValueTuple keeps the (Gradient, bool)? signatures identical to the original; netstandard2.0 has it built in. -->
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" Condition="'$(TargetFramework)' == 'net45'" />
   </ItemGroup>
 
   <ItemGroup>

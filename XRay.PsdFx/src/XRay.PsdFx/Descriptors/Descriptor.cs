@@ -213,11 +213,47 @@ namespace XRay.PsdFx
             return TryGet(key, out v) && v.Type == DescriptorValueType.Enum ? v.EnumValue : null;
         }
 
-        /// <summary>Reads a color object (RGB, gray, CMYK or HSB) as sRGB, or null for other models.</summary>
+        /// <summary>
+        /// Reads a color object (RGB, gray, CMYK, HSB or Lab) as sRGB, or null for other
+        /// models. Descriptors parsed from a document's layers convert gray, CMYK and RGB
+        /// colors the same way as that document's pixels (its embedded ICC profile).
+        /// </summary>
         public PsdColor? GetColor(string key)
         {
             var color = GetObject(key);
-            return color == null ? (PsdColor?)null : ColorFromDescriptor(color);
+            return color == null ? (PsdColor?)null : ColorFromDescriptor(color, Colors);
+        }
+
+        /// <summary>The document color conversion this descriptor's colors go through (null: the built-in formulas).</summary>
+        internal DocumentColors Colors { get; private set; }
+
+        /// <summary>Makes this descriptor and every nested one convert colors through <paramref name="colors"/>.</summary>
+        internal Descriptor AttachColors(DocumentColors colors)
+        {
+            Colors = colors;
+            foreach (var item in _items)
+            {
+                AttachColors(item.Value, colors);
+            }
+
+            return this;
+        }
+
+        private static void AttachColors(DescriptorValue value, DocumentColors colors)
+        {
+            // Nesting depth is bounded by the reader (64 levels).
+            if (value.Object != null)
+            {
+                value.Object.AttachColors(colors);
+            }
+
+            if (value.List != null)
+            {
+                foreach (var entry in value.List)
+                {
+                    AttachColors(entry, colors);
+                }
+            }
         }
 
         public override string ToString()
@@ -279,7 +315,7 @@ namespace XRay.PsdFx
             return Read(reader);
         }
 
-        internal static PsdColor? ColorFromDescriptor(Descriptor color)
+        internal static PsdColor? ColorFromDescriptor(Descriptor color, DocumentColors colors = null)
         {
             DescriptorValue rf;
             DescriptorValue rd;
@@ -301,6 +337,11 @@ namespace XRay.PsdFx
                     blue = color.GetNumber("Bl  ", 0);
                 }
 
+                if (colors != null)
+                {
+                    return colors.FromDescriptorRgb(red, green, blue);
+                }
+
                 return new PsdColor(PsdColor.ClampByte(red), PsdColor.ClampByte(green), PsdColor.ClampByte(blue));
             }
 
@@ -308,6 +349,11 @@ namespace XRay.PsdFx
             DescriptorValue gray;
             if (color.TryGet("Gry ", out gray))
             {
+                if (colors != null)
+                {
+                    return colors.FromGray(1 - (gray.AsNumber() / 100.0));
+                }
+
                 var g = PsdColor.ClampByte(255 - (gray.AsNumber() * 2.55));
                 return new PsdColor(g, g, g);
             }
@@ -319,6 +365,11 @@ namespace XRay.PsdFx
                 var m = color.GetNumber("Mgnt", 0) / 100.0;
                 var y = color.GetNumber("Ylw ", 0) / 100.0;
                 var k = color.GetNumber("Blck", 0) / 100.0;
+                if (colors != null)
+                {
+                    return colors.FromInk(c, m, y, k);
+                }
+
                 return new PsdColor(
                     PsdColor.ClampByte(255 * (1 - c) * (1 - k)),
                     PsdColor.ClampByte(255 * (1 - m) * (1 - k)),
@@ -334,6 +385,14 @@ namespace XRay.PsdFx
                 double r, g, bl;
                 HsbToRgb(hue, s, b, out r, out g, out bl);
                 return new PsdColor(PsdColor.ClampByte(r * 255), PsdColor.ClampByte(g * 255), PsdColor.ClampByte(bl * 255));
+            }
+
+            DescriptorValue l;
+            if (color.TryGet("Lmnc", out l))
+            {
+                double r, g, b;
+                ColorSpaces.LabToSrgb(color.GetNumber("Lmnc", 0), color.GetNumber("A   ", 0), color.GetNumber("B   ", 0), out r, out g, out b);
+                return new PsdColor(PsdColor.ClampByte(r * 255), PsdColor.ClampByte(g * 255), PsdColor.ClampByte(b * 255));
             }
 
             return null;

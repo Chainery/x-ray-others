@@ -53,12 +53,13 @@ namespace XRay.PsdFx
 
         public PsdRect Bounds { get; private set; }
 
-        private readonly PsdRect? _logical;
+        private PsdRect? _logical;
 
         /// <summary>The bounds this image has in a whole-canvas render.</summary>
         public PsdRect Logical
         {
             get { return _logical.HasValue ? _logical.Value : Bounds; }
+            internal set { _logical = value; }
         }
 
         public int Width

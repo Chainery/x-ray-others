@@ -136,6 +136,11 @@ public sealed class PsdLayer
     /// <summary>Typed view of the metadata block (<c>shmd</c>): layer time and per-comp state, parsed on first use; null without one.</summary>
     public PsdLayerMetadata? Metadata => LazyInitializer.EnsureInitialized(ref _metadata, () => new(GetTaggedBlock("shmd") is { } block ? PsdLayerMetadata.Parse(block.Data) : null)).Value;
 
+    private System.Runtime.CompilerServices.StrongBox<Rendering.PsdAdjustment?>? _adjustment;
+
+    /// <summary>Typed view of an adjustment layer's parameters (<c>levl</c>, <c>curv</c>...), parsed on first use; null for any other layer.</summary>
+    public Rendering.PsdAdjustment? Adjustment => LazyInitializer.EnsureInitialized(ref _adjustment, () => new(Rendering.PsdAdjustment.TryCreate(this))).Value;
+
     /// <summary>Smart-object placement descriptor (<c>SoLd</c>/<c>SoLE</c>/<c>PlLd</c>), when present.</summary>
     public Descriptor? SmartObject { get; internal set; }
 

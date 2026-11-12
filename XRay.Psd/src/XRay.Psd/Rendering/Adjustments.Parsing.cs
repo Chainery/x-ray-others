@@ -5,7 +5,7 @@ using XRay.Psd.Layers;
 namespace XRay.Psd.Rendering;
 
 /// <summary>One Levels record (<c>LevelsRecord</c> in .reference/src/core/adjustment_layer.hpp).</summary>
-internal readonly record struct LevelsRecord(int BlackInput = 0, int WhiteInput = 255, int GammaPercent = 100, int BlackOutput = 0, int WhiteOutput = 255)
+public readonly record struct LevelsRecord(int BlackInput = 0, int WhiteInput = 255, int GammaPercent = 100, int BlackOutput = 0, int WhiteOutput = 255)
 {
     public static LevelsRecord Identity => new(0, 255, 100, 0, 255);
 
@@ -33,7 +33,7 @@ internal readonly record struct LevelsRecord(int BlackInput = 0, int WhiteInput 
 }
 
 /// <summary>Composite (master) and per-channel Levels records.</summary>
-internal sealed record LevelsSettings(LevelsRecord Master, LevelsRecord Red, LevelsRecord Green, LevelsRecord Blue)
+public sealed record LevelsSettings(LevelsRecord Master, LevelsRecord Red, LevelsRecord Green, LevelsRecord Blue)
 {
     /// <summary>A CMYK document's black ink record (the fifth); only the ink-space path reads it.</summary>
     public LevelsRecord BlackInk { get; init; } = LevelsRecord.Identity;
@@ -42,10 +42,10 @@ internal sealed record LevelsSettings(LevelsRecord Master, LevelsRecord Red, Lev
 }
 
 /// <summary>A Curves control point, 0..255 on both axes.</summary>
-internal readonly record struct CurvePoint(int Input, int Output);
+public readonly record struct CurvePoint(int Input, int Output);
 
 /// <summary>Composite and per-channel Curves control points (<c>CurvesAdjustment</c>).</summary>
-internal sealed record CurvesSettings(CurvePoint[] Rgb, CurvePoint[] Red, CurvePoint[] Green, CurvePoint[] Blue)
+public sealed record CurvesSettings(CurvePoint[] Rgb, CurvePoint[] Red, CurvePoint[] Green, CurvePoint[] Blue)
 {
     /// <summary>A CMYK document's black ink curve (curve index 4); only the ink-space path reads it.</summary>
     public CurvePoint[] BlackInk { get; init; } = IdentityPoints;
@@ -56,13 +56,13 @@ internal sealed record CurvesSettings(CurvePoint[] Rgb, CurvePoint[] Red, CurveP
 }
 
 /// <summary>One of Photoshop's six per-hue-range bands (<c>HueSaturationBand</c>).</summary>
-internal readonly record struct HueSaturationBand(int OuterStart, int InnerStart, int InnerEnd, int OuterEnd, int Hue, int Saturation, int Lightness)
+public readonly record struct HueSaturationBand(int OuterStart, int InnerStart, int InnerEnd, int OuterEnd, int Hue, int Saturation, int Lightness)
 {
     public bool HasEffect => Hue != 0 || Saturation != 0 || Lightness != 0;
 }
 
 /// <summary>Hue/Saturation settings (<c>HueSaturationAdjustment</c>).</summary>
-internal sealed record HueSaturationSettings
+public sealed record HueSaturationSettings
 {
     public int Hue { get; init; }
 
@@ -83,13 +83,13 @@ internal sealed record HueSaturationSettings
 }
 
 /// <summary>One Color Balance tone range: the Cyan-Red, Magenta-Green and Yellow-Blue sliders (-100..100).</summary>
-internal readonly record struct ColorBalanceRange(int CyanRed, int MagentaGreen, int YellowBlue)
+public readonly record struct ColorBalanceRange(int CyanRed, int MagentaGreen, int YellowBlue)
 {
     public int this[int channel] => channel switch { 0 => CyanRed, 1 => MagentaGreen, _ => YellowBlue };
 }
 
 /// <summary>Color Balance: shadows, midtones and highlights plus Preserve Luminosity.</summary>
-internal readonly record struct ColorBalanceSettings(ColorBalanceRange Shadows, ColorBalanceRange Midtones, ColorBalanceRange Highlights, bool PreserveLuminosity)
+public readonly record struct ColorBalanceSettings(ColorBalanceRange Shadows, ColorBalanceRange Midtones, ColorBalanceRange Highlights, bool PreserveLuminosity)
 {
     /// <summary>A midtones-only setting with Preserve Luminosity off.</summary>
     public ColorBalanceSettings(int cyanRed, int magentaGreen, int yellowBlue)
@@ -99,10 +99,10 @@ internal readonly record struct ColorBalanceSettings(ColorBalanceRange Shadows, 
 }
 
 /// <summary>Brightness/Contrast; legacy ranges -100..100, modern brightness -150..150 and contrast -50..100.</summary>
-internal readonly record struct BrightnessContrastSettings(int Brightness, int Contrast, bool UseLegacy);
+public readonly record struct BrightnessContrastSettings(int Brightness, int Contrast, bool UseLegacy);
 
 /// <summary>Exposure at Photoshop's field precision: stops / 100, offset / 10000, gamma / 100.</summary>
-internal readonly record struct ExposureSettings(int ExposureHundredths, int OffsetTenThousandths, int GammaHundredths)
+public readonly record struct ExposureSettings(int ExposureHundredths, int OffsetTenThousandths, int GammaHundredths)
 {
     public ExposureSettings Clamped() => new(
         Math.Clamp(ExposureHundredths, -2000, 2000),
@@ -235,7 +235,7 @@ internal static partial class Adjustments
     /// Photoshop writes an all-zero compatibility <c>brit</c> beside it); a file with
     /// <c>brit</c> alone is the CS-era legacy record.
     /// </summary>
-    private static BrightnessContrastSettings? ResolveBrightnessContrast(PsdLayer layer, ReadOnlySpan<byte> brit)
+    internal static BrightnessContrastSettings? ResolveBrightnessContrast(PsdLayer layer, ReadOnlySpan<byte> brit)
     {
         if (layer.GetTaggedBlock("CgEd") is { } descriptor && ParseBrightnessContrastDescriptor(descriptor.Data) is { } modern)
         {

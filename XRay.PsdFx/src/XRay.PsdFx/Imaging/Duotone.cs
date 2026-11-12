@@ -223,7 +223,7 @@ namespace XRay.PsdFx
 
         /// <summary>
         /// A 10-byte Photoshop color as sRGB: Lab (space 7: L 0 to 10000, a and b signed
-        /// hundredths) here, the other spaces through <see cref="LegacyText.ReadColor"/>.
+        /// hundredths) here, the other spaces through <see cref="LegacyText.ReadColor(XRay.PsdFx.BigEndianReader)"/>.
         /// Color-book inks (Pantone and the like) cannot be resolved without the books
         /// and render as black.
         /// </summary>

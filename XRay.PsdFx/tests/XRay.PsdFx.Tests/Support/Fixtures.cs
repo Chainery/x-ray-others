@@ -42,7 +42,8 @@ namespace XRay.PsdFx.Tests.Support
                 var psd = Path.Combine(root, "psd");
                 if (!Directory.Exists(psd))
                 {
-                    throw new DirectoryNotFoundException("test_documents was found at " + root + " but has no psd/ folder; update the corpus.");
+                    Assert.Inconclusive(
+                        "test_documents was found at " + root + " but has no psd/ folder; update the corpus.");
                 }
 
                 return psd;

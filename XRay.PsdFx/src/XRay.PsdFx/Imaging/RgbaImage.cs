@@ -4,8 +4,8 @@ namespace XRay.PsdFx
 {
     /// <summary>
     /// An 8-bit sRGB image with straight (non-premultiplied) alpha, stored as
-    /// interleaved RGBA rows. The ToPng/ToJpeg/Save methods of the original arrive
-    /// with the encoders in phase 9.
+    /// interleaved RGBA rows. ToPng/ToJpeg/SavePng/SaveJpeg use the dependency-free
+    /// encoders in Codecs/.
     /// </summary>
     public sealed class RgbaImage
     {
@@ -102,6 +102,58 @@ namespace XRay.PsdFx
             });
 
             return result;
+        }
+
+        /// <summary>Encodes as PNG (alpha dropped when the image is opaque unless told otherwise).</summary>
+        public byte[] ToPng(bool dropAlphaIfOpaque = true, PngCompressionLevel level = PngCompressionLevel.Default)
+        {
+            return PngEncoder.Encode(this, dropAlphaIfOpaque, level);
+        }
+
+        /// <summary>Encodes as PNG into a stream.</summary>
+        public void ToPng(System.IO.Stream output, bool dropAlphaIfOpaque = true, PngCompressionLevel level = PngCompressionLevel.Default)
+        {
+            PngEncoder.Encode(this, output, dropAlphaIfOpaque, level);
+        }
+
+        /// <summary>Encodes as baseline JPEG, flattening transparency over the background or white.</summary>
+        public byte[] ToJpeg(int quality = 90, PsdColor? background = null)
+        {
+            return JpegEncoder.Encode(this, quality, background);
+        }
+
+        /// <summary>Encodes as baseline JPEG into a stream.</summary>
+        public void ToJpeg(System.IO.Stream output, int quality = 90, PsdColor? background = null)
+        {
+            JpegEncoder.Encode(this, output, quality, background);
+        }
+
+        /// <summary>Writes the image as a PNG file.</summary>
+        public void SavePng(string path, bool dropAlphaIfOpaque = true)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            using (var stream = System.IO.File.Create(path))
+            {
+                PngEncoder.Encode(this, stream, dropAlphaIfOpaque, PngCompressionLevel.Default);
+            }
+        }
+
+        /// <summary>Writes the image as a JPEG file.</summary>
+        public void SaveJpeg(string path, int quality = 90, PsdColor? background = null)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            using (var stream = System.IO.File.Create(path))
+            {
+                JpegEncoder.Encode(this, stream, quality, background);
+            }
         }
     }
 }

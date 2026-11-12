@@ -93,6 +93,19 @@ namespace XRay.PsdFx.Demo
                 Console.WriteLine();
                 Console.WriteLine("Raw lfx2 block of \"" + layer.Name + "\": " + lfx2.Length + " bytes, first 16: " + ToHex(lfx2, 16));
             }
+
+            // Phase 6: text extraction, document text engine and linked files.
+            Console.WriteLine();
+            Console.WriteLine("Text extraction:");
+            foreach (var item in document.ExtractText().Items)
+            {
+                Console.WriteLine("  [" + item.Kind + "] depth=" + item.Depth + " src=\"" + item.Source + "\" text=\"" + item.Text + "\"");
+            }
+
+            var engine = document.TextEngine;
+            Console.WriteLine(
+                "Txt2 engine: " + (engine == null ? "none" : engine.Fonts.Count + " fonts, " + engine.Frames.Count + " frames, " + engine.Objects.Count + " objects"));
+            Console.WriteLine("Linked files: " + document.LinkedFiles.Count);
         }
 
         /// <summary>

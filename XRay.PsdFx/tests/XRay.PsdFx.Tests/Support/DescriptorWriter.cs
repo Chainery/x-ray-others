@@ -46,6 +46,13 @@ namespace XRay.PsdFx.Tests.Support
 
         public DescriptorWriter Value(object value)
         {
+            if (value is string)
+            {
+                _writer.Ascii("TEXT");
+                _writer.UnicodeString((string)value);
+                return this;
+            }
+
             if (value is bool)
             {
                 _writer.Ascii("bool");
@@ -82,6 +89,15 @@ namespace XRay.PsdFx.Tests.Support
                 _writer.Ascii("enum");
                 _writer.DescriptorId(enumerated.Type);
                 _writer.DescriptorId(enumerated.Value);
+                return this;
+            }
+
+            var raw = value as RawBytes;
+            if (raw != null)
+            {
+                _writer.Ascii("tdta");
+                _writer.U32((uint)raw.Value.Length);
+                _writer.Bytes(raw.Value);
                 return this;
             }
 
@@ -165,6 +181,16 @@ namespace XRay.PsdFx.Tests.Support
             public string ClassId { get; private set; }
 
             public KeyValuePair<string, object>[] Items { get; private set; }
+        }
+
+        internal sealed class RawBytes
+        {
+            public RawBytes(byte[] value)
+            {
+                Value = value;
+            }
+
+            public byte[] Value { get; private set; }
         }
     }
 }

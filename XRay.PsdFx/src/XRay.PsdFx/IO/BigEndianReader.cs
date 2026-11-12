@@ -14,6 +14,12 @@ namespace XRay.PsdFx
 
         private readonly byte[] _data;
 
+        /// <summary>The underlying buffer, for zero-copy codecs over a positioned window.</summary>
+        public byte[] Data
+        {
+            get { return _data; }
+        }
+
         public BigEndianReader(byte[] data)
         {
             _data = data;
@@ -69,6 +75,14 @@ namespace XRay.PsdFx
         public long ReadInt64() => unchecked((long)ReadUInt64());
 
         public double ReadDouble() => BitConverter.Int64BitsToDouble(unchecked((long)ReadUInt64()));
+
+        /// <summary>A big-endian 32-bit IEEE single.</summary>
+        public float ReadSingle()
+        {
+            var start = Take(4);
+            var bytes = new[] { _data[start + 3], _data[start + 2], _data[start + 1], _data[start] };
+            return BitConverter.ToSingle(bytes, 0);
+        }
 
         /// <summary>Reads a 16.16 fixed-point number.</summary>
         public double ReadFixed16() => ReadInt32() / 65536.0;
